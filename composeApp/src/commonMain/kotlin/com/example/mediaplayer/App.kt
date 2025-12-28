@@ -51,24 +51,30 @@ fun App() {
         }
     }
 
+
     val playTrack = { index: Int ->
         if (tracks != null && index in tracks!!.indices) {
             currentIndex = index
+            isPlayingUI = true
             audioPlayer.play(tracks!![index].previewUrl)
         }
     }
 
     LaunchedEffect(currentIndex) {
         while (true) {
-            isPlayingUI = audioPlayer.isPlaying()
-            if (audioPlayer.getCurrentPosition() > 29000) {
-                if (tracks != null && currentIndex < tracks!!.size - 1) {
-                    playTrack(currentIndex + 1)
+            if (currentIndex != -1) {
+                isPlayingUI = audioPlayer.isPlaying()
+
+                if (audioPlayer.getCurrentPosition() > 29000) {
+                    if (tracks != null && currentIndex < tracks!!.size - 1) {
+                        playTrack(currentIndex + 1)
+                    }
                 }
             }
-            delay(1000)
+            delay(500)
         }
     }
+
 
     MaterialTheme(
         colorScheme = if (isDarkTheme) darkColorScheme(primary = goldenColor)
@@ -124,19 +130,33 @@ fun App() {
                                 IconButton(onClick = { if (currentIndex > 0) playTrack(currentIndex - 1) }) {
                                     Icon(Icons.Default.SkipPrevious, null, tint = activeColor)
                                 }
+
                                 FloatingActionButton(
                                     onClick = {
-                                        if (audioPlayer.isPlaying()) audioPlayer.pause()
-                                        else audioPlayer.play(track.previewUrl)
+                                        if (audioPlayer.isPlaying()) {
+                                            audioPlayer.pause()
+                                            isPlayingUI = false
+                                        } else {
+                                            audioPlayer.pause()
+                                            isPlayingUI = true
+                                        }
                                     },
                                     containerColor = activeColor,
                                     shape = CircleShape,
                                     modifier = Modifier.size(48.dp)
                                 ) {
-                                    Icon(if (isPlayingUI) Icons.Default.Pause else Icons.Default.PlayArrow, null,
-                                        tint = if(isDarkTheme) Color.Black else Color.White)
+                                    Icon(
+                                        imageVector = if (isPlayingUI) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                        contentDescription = null,
+                                        tint = if(isDarkTheme) Color.Black else Color.White
+                                    )
                                 }
-                                IconButton(onClick = { if (currentIndex < tracks!!.size - 1) playTrack(currentIndex + 1) }) {
+
+                                IconButton(onClick = {
+                                    if (currentIndex < tracks!!.size - 1) {
+                                        playTrack(currentIndex + 1)
+                                    }
+                                }) {
                                     Icon(Icons.Default.SkipNext, null, tint = activeColor)
                                 }
                             }
